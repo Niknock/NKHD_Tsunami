@@ -1,7 +1,7 @@
 local nkhd_tsunamiActive = false
 local currentWaterHeight = 0.0
 local maxWaterHeight = 250.0
-local nkhd_tsunamiSpeed = 250
+local nkhd_tsunamiSpeed = 0.05
 local nkhd_tsunamiWaitTime = 600000000 
 local WaterWaitingTime = 100
 
@@ -51,6 +51,7 @@ end)
 
 AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     if nkhd_tsunamiActive then
+        TriggerClientEvent('nkhd_tsunami:load', source)
         TriggerClientEvent('nkhd_tsunami:start', source, currentWaterHeight, maxWaterHeight, nkhd_tsunamiSpeed, nkhd_tsunamiWaitTime)
     end
 end)
