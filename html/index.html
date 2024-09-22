@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tsunami-Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #12121200;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #e0e0e0; 
+        }
+
+        .menu-container {
+            background-color: rgba(24, 24, 24, 0.95); 
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 255, 0.2); 
+            display: none; 
+            max-width: 400px;
+            width: 100%; 
+        }
+
+        .menu-container h1 {
+            text-align: center;
+            color: #00b0ff;
+            font-size: 24px;
+        }
+
+        .menu-item {
+            margin: 15px 0;
+        }
+
+        .menu-item label {
+            margin-right: 10px;
+            font-size: 16px;
+            color: #00b0ff;
+        }
+
+        .menu-item input {
+            padding: 10px;
+            background-color: #333; 
+            border: 1px solid #00b0ff; 
+            border-radius: 5px;
+            color: #e0e0e0; 
+            width: 100%;
+            box-sizing: border-box; 
+        }
+
+        .menu-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .menu-buttons button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #00b0ff; 
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-buttons button:hover {
+            background-color: #008ecf; 
+        }
+
+        .menu-buttons button:active {
+            background-color: #0073a6; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="menu-container" id="menu">
+    <h1>Tsunami</h1>
+
+    <div class="menu-buttons">
+        <button onclick="startTsunami()">Start</button>
+        <button onclick="stopTsunami()">Stop</button>
+        <button onclick="reloadWater()">Reset Water</button>
+        <button onclick="closeMenu()">Close</button>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('message', function(event) {
+        if (event.data.action == "open") {
+            document.getElementById('menu').style.display = 'block'; 
+        } else if (event.data.action == "close") {
+            document.getElementById('menu').style.display = 'none';  
+        }
+    });
+
+    function startTsunami() {
+        fetch(`http://NKHD_Tsunami/startTsunami`);
+    }
+
+    function stopTsunami() {
+        fetch('http://NKHD_Tsunami/stopTsunami');
+    }
+
+    function reloadWater() {
+        fetch('http://NKHD_Tsunami/reloadWater');
+    }
+
+    function closeMenu() {
+        fetch('http://NKHD_Tsunami/closeMenu'); 
+    }
+</script>
+
+</body>
+</html>
