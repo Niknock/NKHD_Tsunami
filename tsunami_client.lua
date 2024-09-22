@@ -1,7 +1,7 @@
 local nkhd_tsunamiActive = false
 local currentWaterHeight = 0.0
 local maxWaterHeight = 250.0
-local nkhd_tsunamiSpeed = 250
+local nkhd_tsunamiSpeed = 0.05
 local WaterWaitingTime = 100
 
 function setGlobalWaterHeight(height)
