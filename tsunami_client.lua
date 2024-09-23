@@ -1,8 +1,9 @@
 local nkhd_tsunamiActive = false
 local currentWaterHeight = 0.0
-local maxWaterHeight = 250.0
-local nkhd_tsunamiSpeed = 0.05
-local WaterWaitingTime = 100
+local maxWaterHeight = Config.maxWaterHeight
+local nkhd_tsunamiSpeed = Config.tsunamiSpeed
+local WaterWaitingTime = Config.WaterWaitingTime
+local Waterloaded = false
 
 function setGlobalWaterHeight(height)
     ModifyWater(height)
@@ -10,6 +11,15 @@ end
 
 RegisterNetEvent('nkhd_tsunami:updateHeight')
 AddEventHandler('nkhd_tsunami:updateHeight', function(newHeight)
+
+    if Waterloaded == false then
+        TriggerEvent('nkhd_tsunami:load')
+    end
+
+    if Swimmcheck == false then
+        TriggerEvent('nkhd_tsunami:swimcheck')
+    end
+
     local waterQuadCount = GetWaterQuadCount()
     for i = 1, waterQuadCount, 1 do
         local success, waterQuadLevel = GetWaterQuadLevel(i)
@@ -22,8 +32,10 @@ end)
 
 RegisterNetEvent('nkhd_tsunami:start')
 AddEventHandler('nkhd_tsunami:start', function(startHeight, maxHeight, speed, waitTime)
-    TriggerEvent('nkhd_tsunami:swimcheck')
-    TriggerEvent('nkhd_tsunami:load')
+    if Waterloaded == false then
+        TriggerEvent('nkhd_tsunami:load')
+    end
+
     TriggerEvent('nkhd_tsunami:stopSpawning')
     nkhd_tsunamiActive = true
     currentWaterHeight = startHeight or 0.0
@@ -59,10 +71,13 @@ AddEventHandler('nkhd_tsunami:stop', function()
         Citizen.Wait(WaterWaitingTime)
     end
     TriggerEvent('nkhd_tsunami:resumeSpawning')
+    Waterloaded = false
+    Swimmcheck = false
 end)
 
 RegisterNetEvent('nkhd_tsunami:load')
 AddEventHandler('nkhd_tsunami:load', function()
+    Waterloaded = true
     print('Loading custom flood_initial.xml')
     local success = LoadWaterFromPath(GetCurrentResourceName(), 'flood_initial.xml')
     if success ~= 1 then
@@ -120,24 +135,4 @@ end)
 RegisterNUICallback('reloadWater', function(data, cb)
     TriggerServerEvent('reloadWater')
     cb('ok')
-end)
-
-RegisterNetEvent('nkhd_tsunami:swimcheck')
-AddEventHandler('nkhd_tsunami:swimcheck', function()
-    Citizen.CreateThread(function()
-        while nkhd_tsunamiActive do
-            local ped = PlayerPedId()
-            local pCoords = GetEntityCoords(ped)
-            local wCoords = GetWaterQuadAtCoords_3d(pCoords.x, pCoords.y, pCoords.z)
-
-            if wCoords and type(wCoords) == "vector3" and wCoords.z >= 0 then
-                local allPeds = GetGamePool('CPed')
-                for i = 1, #allPeds do
-                    SetPedConfigFlag(allPeds[i], 65, true)
-                    SetPedDiesInWater(allPeds[i], true)
-                end
-            end
-            Citizen.Wait(5000)
-        end
-    end)
 end)
