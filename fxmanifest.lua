@@ -3,12 +3,13 @@ game 'gta5'
 
 author 'Niknock HD'
 description 'NKHD Tsunami'
-version '1.0'
+version '1.1.0'
 
 ui_page 'html/index.html'
 
-client_script 'tsunami_client.lua'
-server_script 'tsunami_server.lua'
+client_scripts {'tsunami_client.lua', 'config.lua'}
+server_scripts {'tsunami_server.lua', 'config.lua'}
+shared_script 'config.lua'
 
 files {
 	'html/index.html',
