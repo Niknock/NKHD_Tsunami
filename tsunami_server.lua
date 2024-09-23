@@ -1,17 +1,41 @@
+ESX = nil
+QBCore = nil
+
+if Config.Framework == "ESX" then
+    ESX = exports["es_extended"]:getSharedObject()
+elseif Config.Framework == "QBCore" then
+    QBCore = exports['qb-core']:GetCoreObject()
+end
+
 local nkhd_tsunamiActive = false
 local currentWaterHeight = 0.0
-local maxWaterHeight = 250.0
-local nkhd_tsunamiSpeed = 0.05
-local nkhd_tsunamiWaitTime = 600000000 
-local WaterWaitingTime = 100
+local maxWaterHeight = Config.maxWaterHeight
+local nkhd_tsunamiSpeed = Config.tsunamiSpeed
+local nkhd_tsunamiWaitTime = Config.tsunamiWaitTime 
+local WaterWaitingTime = Config.WaterWaitingTime
 
 function updateWaterHeight(newHeight)
     currentWaterHeight = newHeight
     TriggerClientEvent('nkhd_tsunami:updateHeight', -1, currentWaterHeight)
 end
 
+local function isPlayerAdmin(source)
+    if Config.Framework == "ESX" then
+        local xPlayer = ESX.GetPlayerFromId(source)
+        return xPlayer and xPlayer.getGroup() == "admin"
+        
+    elseif Config.Framework == "QBCore" then
+        local Player = QBCore.Functions.GetPlayer(source)
+        return Player and Player.PlayerData.job.name == "admin"
+    else
+        return true
+    end
+end
+
 RegisterCommand("tsunami", function(source, args, rawCommand)
-    TriggerClientEvent("openTsunamiMenu", source)
+    if isPlayerAdmin(source) then
+        TriggerClientEvent("openTsunamiMenu", source)
+    end
 end)
 
 RegisterServerEvent('nkhd_startTsunami_server')
@@ -49,7 +73,7 @@ AddEventHandler('reloadWater', function()
     TriggerClientEvent("nkhd_tsunami:loadend", -1)
 end)
 
-AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
+AddEventHandler('playerSpawned', function()
     if nkhd_tsunamiActive then
         TriggerClientEvent('nkhd_tsunami:load', source)
         TriggerClientEvent('nkhd_tsunami:start', source, currentWaterHeight, maxWaterHeight, nkhd_tsunamiSpeed, nkhd_tsunamiWaitTime)
