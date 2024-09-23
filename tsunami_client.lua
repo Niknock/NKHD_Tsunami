@@ -1,9 +1,11 @@
 local nkhd_tsunamiActive = false
+local nkhd_tsunamiPaused = false
 local currentWaterHeight = 0.0
 local maxWaterHeight = Config.maxWaterHeight
 local nkhd_tsunamiSpeed = Config.tsunamiSpeed
 local WaterWaitingTime = Config.WaterWaitingTime
 local Waterloaded = false
+local Swimmcheck = false
 
 function setGlobalWaterHeight(height)
     ModifyWater(height)
@@ -17,7 +19,7 @@ AddEventHandler('nkhd_tsunami:updateHeight', function(newHeight)
     end
 
     if Swimmcheck == false then
-        TriggerEvent('nkhd_tsunami:swimcheck')
+        TriggerEvent('nkhd_tsunami:Swimmcheck')
     end
 
     local waterQuadCount = GetWaterQuadCount()
@@ -44,19 +46,24 @@ AddEventHandler('nkhd_tsunami:start', function(startHeight, maxHeight, speed, wa
 
     Citizen.CreateThread(function()
         while nkhd_tsunamiActive do
-            if currentWaterHeight < maxWaterHeight then
-                currentWaterHeight = currentWaterHeight + nkhd_tsunamiSpeed
-                setGlobalWaterHeight(currentWaterHeight)
-            else
-                Citizen.Wait(waitTime)
-                nkhd_tsunamiActive = false
+            if nkhd_tsunamiPaused == false then
+                if currentWaterHeight < maxWaterHeight then
+                    currentWaterHeight = currentWaterHeight + nkhd_tsunamiSpeed
+                    setGlobalWaterHeight(currentWaterHeight)
+                else
+                    Citizen.Wait(waitTime)
+                    nkhd_tsunamiActive = false
+                end
             end
             Citizen.Wait(WaterWaitingTime)
         end
 
         while currentWaterHeight > 0.0 do
-            currentWaterHeight = currentWaterHeight - nkhd_tsunamiSpeed
-            setGlobalWaterHeight(currentWaterHeight)
+            if nkhd_tsunamiPaused == false then
+                currentWaterHeight = currentWaterHeight - nkhd_tsunamiSpeed
+                setGlobalWaterHeight(currentWaterHeight)
+                Citizen.Wait(WaterWaitingTime)
+            end
             Citizen.Wait(WaterWaitingTime)
         end
     end)
@@ -64,15 +71,26 @@ end)
 
 RegisterNetEvent('nkhd_tsunami:stop')
 AddEventHandler('nkhd_tsunami:stop', function()
-    nkhd_tsunamiActive = false
     while currentWaterHeight > 0.0 do
-        currentWaterHeight = currentWaterHeight - nkhd_tsunamiSpeed
-        setGlobalWaterHeight(currentWaterHeight)
+        if nkhd_tsunamiPaused == false then
+            currentWaterHeight = currentWaterHeight - nkhd_tsunamiSpeed
+            setGlobalWaterHeight(currentWaterHeight)
+            Citizen.Wait(WaterWaitingTime)
+        end
         Citizen.Wait(WaterWaitingTime)
     end
     TriggerEvent('nkhd_tsunami:resumeSpawning')
     Waterloaded = false
     Swimmcheck = false
+end)
+
+RegisterNetEvent('nkhd_tsunami:pause')
+AddEventHandler('nkhd_tsunami:pause', function()
+    if nkhd_tsunamiPaused == false then
+        nkhd_tsunamiPaused = true
+    else
+        nkhd_tsunamiPaused = false
+    end
 end)
 
 RegisterNetEvent('nkhd_tsunami:load')
@@ -132,7 +150,36 @@ RegisterNUICallback('stopTsunami', function(data, cb)
     cb('ok')
 end)
 
+RegisterNUICallback('pauseTsunami', function(data, cb)
+    TriggerServerEvent('nkhd_pauseTsunami_server')
+    cb('ok')
+end)
+
 RegisterNUICallback('reloadWater', function(data, cb)
     TriggerServerEvent('reloadWater')
     cb('ok')
+end)
+
+RegisterNetEvent('nkhd_tsunami:Swimmcheck')
+AddEventHandler('nkhd_tsunami:Swimmcheck', function()
+    if Swimmcheck == false then
+        Swimmcheck = true
+        print('Swimmcheck = true')
+    end
+    Citizen.CreateThread(function()
+        local pCoords, wCoords, allPeds = nil, nil, nil
+        local ped = PlayerPedId()
+        while true do
+            pCoords = GetEntityCoords(ped)
+            wCoords = GetWaterQuadAtCoords_3d(pCoords.x, pCoords.y, pCoords.z)
+            if wCoords ~= -1 then
+                allPeds = GetGamePool('CPed')
+                for i = 1, #allPeds do
+                    SetPedConfigFlag(allPeds[i], 65, true)
+                    SetPedDiesInWater(allPeds[i], true)
+                end
+            end
+            Citizen.Wait(1)
+        end
+    end)
 end)
