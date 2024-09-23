@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Niknock HD'
 description 'NKHD Tsunami'
-version '1.1.0'
+version '1.2.0'
 
 ui_page 'html/index.html'
 
