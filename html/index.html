@@ -87,6 +87,7 @@
     <div class="menu-buttons">
         <button onclick="startTsunami()">Start</button>
         <button onclick="stopTsunami()">Stop</button>
+        <button onclick="pauseTsunami()">Pause</button>
         <button onclick="reloadWater()">Reset Water</button>
         <button onclick="closeMenu()">Close</button>
     </div>
@@ -107,6 +108,10 @@
 
     function stopTsunami() {
         fetch('http://NKHD_Tsunami/stopTsunami');
+    }
+
+    function pauseTsunami() {
+        fetch('http://NKHD_Tsunami/pauseTsunami');
     }
 
     function reloadWater() {
