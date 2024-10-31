@@ -23,11 +23,10 @@ end
 local function isPlayerAdmin(source)
     if Config.Framework == "ESX" then
         local xPlayer = ESX.GetPlayerFromId(source)
-        return xPlayer and xPlayer.getGroup() == "admin"
-        
+        return xPlayer and xPlayer.getGroup() == "admin"     
     elseif Config.Framework == "QBCore" then
         local Player = QBCore.Functions.GetPlayer(source)
-        return Player and Player.PlayerData.job.name == "admin"
+        return Player and (Player.PlayerData.group == "admin" or Player.PlayerData.group == "superadmin")
     else
         return true
     end
